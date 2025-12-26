@@ -1,0 +1,68 @@
+---
+# Source: ai-platform-op/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-service
+  labels:
+    app.kubernetes.io/name: test
+    app.kubernetes.io/instance: test
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: LoadBalancer
+  selector:
+    app: test
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+# Source: ai-platform-op/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test
+  labels:
+    app.kubernetes.io/name: test
+    app.kubernetes.io/instance: test
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: ai-platform
+          image: "aiacrap.azurecr.io/ai-future-op:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+          livenessProbe:
+            httpGet:
+              path: 
+              port: 
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: 
+              port: 
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          env:
+      nodeSelector:       {}
+      tolerations:       []
+      affinity:       {}
