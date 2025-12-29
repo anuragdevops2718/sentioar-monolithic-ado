@@ -34,9 +34,15 @@ stages:
 
         echo "Running Pylint (Backend)"
         cd ../backend/get-task
+        python -m venv venv
+        source venv/bin/activate
+        pip install pylint
         pylint app.py
 
         cd ../add-task
+        python -m venv venv
+        source venv/bin/activate
+        pip install pylint
         pylint app.py
       displayName: 'Run Biome & Pylint'
 
