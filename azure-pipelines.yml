@@ -79,7 +79,10 @@ stages:
         cd frontend
             npm ci
             npm install
-            npm run test:ci
+            npm run test:ci -- \
+            --reporter=default \
+            --reporter=junit \
+            --outputFile=test-results/junit.xml
       displayName: 'Run Vitest & Coverage'
 
   # -------------------------------------------------------
