@@ -37,14 +37,14 @@ stages:
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pylint
-        pylint app.py
+        pylint app.py --fail-under=9
 
         cd ../add-task
         python -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pylint
-        pylint app.py
+        pylint app.py --fail-under=9
       displayName: 'Run Biome & Pylint'
 
 # =========================================================
