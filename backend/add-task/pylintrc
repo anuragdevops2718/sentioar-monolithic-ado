@@ -8,6 +8,8 @@ disable=
     C0115,
     C0116,  ; missing-function-docstring
     E1102,
+    C0303,
+    C0412,
     R0903,  ; too-few-public-methods
     W0511,  ; TODO comments
     W0611
