@@ -22,30 +22,36 @@ stages:
     - script: |
         npm install -g @biomejs/biome
       displayName: 'Install Biome & Pylint'
-
+    
     # -----------------------------
-    # Task 2: Run linters
+    # Task 2: Run Biome (Frontend)
     # -----------------------------
     - script: |
         echo "Running Biome (Frontend)"
         cd frontend
         biome check .
-
-        echo "Running Pylint (Backend)"
-        cd ../backend/get-task
+      displayName: 'Lint Frontend (Biome)' 
+    # -----------------------------
+    # Task 3: Run Pylint (Backend)
+    # -----------------------------
+    - script: |
+        cd backend/get-task
         python -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pylint
-        pylint app.py --fail-under=9
-
+        python -m pylint app.py --fail-under=9
+        deactivate
+      displayName: 'Lint Backend(Pylint---addtask)'    
+    
+    - script: |
         cd ../add-task
         python -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pylint
-        pylint app.py --fail-under=9
-      displayName: 'Run Biome & Pylint'
+        python -m pylint app.py --fail-under=9
+      displayName: 'Lint Backend(Pylint---addtask)'
 
 # =========================================================
 # STAGE 2: UNIT TESTS & COVERAGE
@@ -106,4 +112,4 @@ stages:
         pip install -r requirements.txt
         pip install pytest pytest-cov
         pytest --cov=app --cov-fail-under=80
-      displayName: 'Run Pytest & Coverage for Backend'
+      displayName: 'Pytest & Coverage for Backend'
