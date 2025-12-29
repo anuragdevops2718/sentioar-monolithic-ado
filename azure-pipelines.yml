@@ -21,7 +21,6 @@ stages:
     # -----------------------------
     - script: |
         npm install -g @biomejs/biome
-        pip install pylint
       displayName: 'Install Biome & Pylint'
 
     # -----------------------------
@@ -36,12 +35,14 @@ stages:
         cd ../backend/get-task
         python -m venv venv
         source venv/bin/activate
+        pip install -r requirements.txt
         pip install pylint
         pylint app.py
 
         cd ../add-task
         python -m venv venv
         source venv/bin/activate
+        pip install -r requirements.txt
         pip install pylint
         pylint app.py
       displayName: 'Run Biome & Pylint'
