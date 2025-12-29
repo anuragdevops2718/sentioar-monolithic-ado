@@ -93,8 +93,14 @@ stages:
         testRunTitle: 'Frontend Vitest Tests'
       condition: always()
     
-
-
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Code Coverage'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: 'frontend/coverage/cobertura-coverage.xml'
+        reportDirectory: 'frontend/coverage'
+      condition: always()
+    
   # -------------------------------------------------------
   # JOB 2: BACKEND - PYTEST + COVERAGE
   # -------------------------------------------------------
@@ -130,6 +136,14 @@ stages:
         testResultsFiles: 'backend/get-task/test-results.xml'
         testRunTitle: 'Backend get-task Pytest'
       condition: always()
+    
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Backend get-task Coverage'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: 'backend/get-task/coverage.xml'
+        reportDirectory: 'backend/get-task'
+      condition: always()
 
     - script: |
         # -------- add-task --------
@@ -153,4 +167,12 @@ stages:
         testResultsFormat: 'JUnit'
         testResultsFiles: 'backend/add-task/test-results.xml'
         testRunTitle: 'Backend add-task Pytest'
+      condition: always()
+    
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Backend add-task Coverage'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: 'backend/add-task/coverage.xml'
+        reportDirectory: 'backend/add-task'
       condition: always()
