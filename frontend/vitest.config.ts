@@ -9,7 +9,7 @@ export default defineConfig({
 		setupFiles: "./src/setupTests.ts",
 		coverage: {
 			provider: "v8", // ✅ fastest
-			reporter: ["text", "html", "lcov"],
+			reporter: ["text", "html", "lcov", "cobertura"],
 			reportsDirectory: "./coverage",
 			exclude: ["node_modules/", "src/main.tsx", "src/vite-env.d.ts"],
 		},
