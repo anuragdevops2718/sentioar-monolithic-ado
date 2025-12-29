@@ -85,6 +85,16 @@ stages:
             --outputFile=test-results/junit.xml
       displayName: 'Run Vitest & Coverage'
 
+    - task: PublishTestResults@2
+      displayName: 'Publish Frontend Test Results'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'frontend/test-results/junit.xml'
+        testRunTitle: 'Frontend Vitest Tests'
+      condition: always()
+    
+
+
   # -------------------------------------------------------
   # JOB 2: BACKEND - PYTEST + COVERAGE
   # -------------------------------------------------------
@@ -105,14 +115,32 @@ stages:
         pip install -r requirements.txt
         pip install pytest pytest-cov
         pytest --cov=app --cov-fail-under=80
-
         deactivate
+      displayName: 'get-task test and coverage'
+    
+    - task: PublishTestResults@2
+      displayName: 'Publish Backend get-task Test Results'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'backend/get-task/test-results.xml'
+        testRunTitle: 'Backend get-task Pytest'
+      condition: always()
 
+    - script: |
         # -------- add-task --------
-        cd ../add-task
+        cd backend/add-task
         python -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pytest pytest-cov
         pytest --cov=app --cov-fail-under=80
-      displayName: 'Pytest & Coverage for Backend'
+        deactivate
+      displayName: 'add-task test and coverage'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish Backend add-task Test Results'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: 'backend/add-task/test-results.xml'
+        testRunTitle: 'Backend add-task Pytest'
+      condition: always()
