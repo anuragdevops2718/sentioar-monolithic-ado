@@ -1,19 +1,32 @@
-# backend/add-task/app.py
-from flask import Flask, jsonify, request
+import os
+
+from flask import Flask, jsonify
 from flask_cors import CORS
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
+from flask import request
+
+
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Text,
+    DateTime,
+)
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.sql import func
-import os
+
 
 app = Flask(__name__)
 CORS(app)
 
-# 🔹 DB connection string from env (K8s secret)
+# 🔹 READ DB CONNECTION STRING FROM ENV
 DB_CONN_STRING = os.environ.get("DB_CONN_STRING")
 
-if not DB_CONN_STRING:
-    raise RuntimeError("DB_CONN_STRING env var not set")
+DB_CONN_STRING = os.environ.get(
+    "DB_CONN_STRING",
+    "sqlite:///./local.db"   # 👈 fallback for lint/tests
+)
 
 engine = create_engine(
     DB_CONN_STRING,
@@ -36,19 +49,19 @@ class Task(Base):
 Base.metadata.create_all(engine)
 
 
-# 🔹 HEALTH CHECK (two routes for AGIC + local test)
+# 🔹 HEALTH
 @app.route("/health", methods=["GET"])
-@app.route("/api/add/health", methods=["GET"])   # 👈 NEW
+@app.route("/api/get/health", methods=["GET"])
 def health():
     return jsonify({
         "status": "healthy",
-        "service": os.environ.get("SERVICE_NAME", "tasks-add")
+        "service": os.environ.get("SERVICE_NAME", "tasks-get")
     }), 200
 
 
-# 🔹 GET TASKS (optional, but keeps things consistent)
+# 🔹 GET TASKS
 @app.route("/tasks", methods=["GET"])
-@app.route("/api/add/tasks", methods=["GET"])   # 👈 NEW
+@app.route("/api/get/tasks", methods=["GET"])
 def get_tasks():
     db = SessionLocal()
     try:
@@ -58,47 +71,54 @@ def get_tasks():
                 "id": t.id,
                 "title": t.title,
                 "description": t.description,
-                "created_at": t.created_at.isoformat() if t.created_at else None,
+                "created_at": t.created_at.isoformat() if t.created_at else None
             }
             for t in tasks
         ]
-        return jsonify({"success": True, "tasks": result, "count": len(result)}), 200
+        return jsonify({
+            "success": True,
+            "tasks": result,
+            "count": len(result)
+        }), 200
     finally:
         db.close()
 
-
-# 🔹 ADD TASK (POST endpoint)
+# 🔹 ADD TASK
 @app.route("/tasks", methods=["POST"])
-@app.route("/api/add/tasks", methods=["POST"])   # 👈 NEW
+@app.route("/api/add/tasks", methods=["POST"])
 def add_task():
-    payload = request.get_json() or {}
-    title = payload.get("title")
-    description = payload.get("description")
+    data = request.get_json()
 
-    if not title:
-        return jsonify({"success": False, "error": "title required"}), 400
+    if not data or not data.get("title"):
+        return jsonify({
+            "success": False,
+            "message": "Title is required"
+        }), 400
 
     db = SessionLocal()
     try:
-        t = Task(title=title, description=description)
-        db.add(t)
+        task = Task(
+            title=data["title"],
+            description=data.get("description")
+        )
+        db.add(task)
         db.commit()
-        db.refresh(t)
+        db.refresh(task)
+
         return jsonify({
             "success": True,
             "task": {
-                "id": t.id,
-                "title": t.title,
-                "description": t.description,
-            },
+                "id": task.id,
+                "title": task.title,
+                "description": task.description
+            }
         }), 201
     finally:
         db.close()
-
-
+        
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5001)),
+        port=int(os.environ.get("PORT", 5000)),
         debug=False,
     )

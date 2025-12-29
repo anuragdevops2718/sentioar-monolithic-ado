@@ -1,14 +1,11 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "types": ["jest", "@testing-library/jest-dom"],
-    "jsx": "react-jsx"
-  },
-  "include": [
-    "src",
-    "jest.setup.ts"
-  ]
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"types": ["jest", "@testing-library/jest-dom"],
+		"jsx": "react-jsx"
+	},
+	"include": ["src", "jest.setup.ts"]
 }

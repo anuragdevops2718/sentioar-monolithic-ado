@@ -1,0 +1,16 @@
+[MASTER]
+ignore=tests
+
+[MESSAGES CONTROL]
+disable=
+    C0103,
+    C0114,  ; missing-module-docstring
+    C0115,
+    C0116,  ; missing-function-docstring
+    E1102,
+    R0903,  ; too-few-public-methods
+    W0511,  ; TODO comments
+    W0611
+
+[FORMAT]
+max-line-length=100
