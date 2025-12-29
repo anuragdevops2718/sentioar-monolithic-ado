@@ -42,10 +42,10 @@ stages:
         pip install pylint
         python -m pylint app.py --fail-under=9
         deactivate
-      displayName: 'Lint Backend(Pylint---addtask)'    
+      displayName: 'Lint Backend(Pylint---gettask)'    
     
     - script: |
-        cd ../add-task
+        cd backend/add-task
         python -m venv venv
         source venv/bin/activate
         pip install -r requirements.txt
