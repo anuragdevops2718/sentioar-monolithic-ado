@@ -63,15 +63,14 @@ stages:
     steps:
     
     - task: NodeTool@0
-      displayName: 'Use Node.js 18'
+      displayName: 'Use Node.js 20'
       inputs:
         versionSource: 'spec'
-        versionSpec: '18.x'
+        versionSpec: '20.x'
         checkLatest: true
 
     - script: |
         cd frontend
-            npm install
             npm ci
             npm run test:ci
       displayName: 'Run Vitest & Coverage'
