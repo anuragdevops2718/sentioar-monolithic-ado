@@ -5,10 +5,98 @@ pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: Lint
-  displayName: Code_Lint
+
+# =========================================================
+# STAGE 1: LINTING
+# =========================================================
+- stage: Linting
+  displayName: 'Stage 1 - Linting'
   jobs:
   - job: Lint
-    displayName: Code_Lint
+    displayName: 'Lint Frontend & Backend'
+    steps:
+
+    # -----------------------------
+    # Task 1: Install linters
+    # -----------------------------
+    - script: |
+        npm install -g @biomejs/biome
+        pip install pylint
+      displayName: 'Install Biome & Pylint'
+
+    # -----------------------------
+    # Task 2: Run linters
+    # -----------------------------
+    - script: |
+        echo "Running Biome (Frontend)"
+        cd frontend
+        biome check .
+
+        echo "Running Pylint (Backend)"
+        cd ../backend/get-task
+        pylint app.py
+
+        cd ../add-task
+        pylint app.py
+      displayName: 'Run Biome & Pylint'
+
+# =========================================================
+# STAGE 2: UNIT TESTS & COVERAGE
+# =========================================================
+- stage: Tests
+  displayName: 'Stage 2 - Unit Tests & Coverage'
+  dependsOn: Linting
+  jobs:
+
+  # -------------------------------------------------------
+  # JOB 1: FRONTEND - VITEST + COVERAGE
+  # -------------------------------------------------------
+  - job: Frontend_Tests
+    displayName: 'Frontend Unit Tests & Coverage'
     steps:
     
+    - task: NodeTool@0
+      displayName: 'Use Node.js 18'
+      inputs:
+        versionSource: 'spec'
+        versionSpec: '18.x'
+        checkLatest: true
+
+    - script: |
+        cd frontend
+            npm install
+            npm ci
+            npm run test:ci
+      displayName: 'Run Vitest & Coverage'
+
+  # -------------------------------------------------------
+  # JOB 2: BACKEND - PYTEST + COVERAGE
+  # -------------------------------------------------------
+  - job: Backend_Tests
+    displayName: 'Backend Unit Tests & Coverage'
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.11'
+        addToPath: true
+
+    - script: |
+        # -------- get-task --------
+        cd backend/get-task
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+        pytest --cov=app --cov-fail-under=80
+
+        deactivate
+
+        # -------- add-task --------
+        cd ../add-task
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+        pytest --cov=app --cov-fail-under=80
+      displayName: 'Run Pytest & Coverage for Backend'
