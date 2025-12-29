@@ -21,7 +21,6 @@ stages:
     # -----------------------------
     - script: |
         npm install -g @biomejs/biome
-        pip install pylint
       displayName: 'Install Biome & Pylint'
 
     # -----------------------------
