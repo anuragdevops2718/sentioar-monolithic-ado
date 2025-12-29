@@ -77,12 +77,12 @@ stages:
 
     - script: |
         cd frontend
-            npm ci
-            npm install
-            npm run test:ci -- \
-            --reporter=default \
-            --reporter=junit \
-            --outputFile=test-results/junit.xml
+        npm ci
+        npm install
+        npm run test:ci -- \
+        --reporter=default \
+        --reporter=junit \
+        --outputFile=test-results/junit.xml
       displayName: 'Run Vitest & Coverage'
 
     - task: PublishTestResults@2
@@ -114,7 +114,12 @@ stages:
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pytest pytest-cov
-        pytest --cov=app --cov-fail-under=80
+        pytest \
+        --junitxml=test-results.xml \
+        --cov=app \
+        --cov-report=xml:coverage.xml \
+        --cov-report=term \
+        --cov-fail-under=80
         deactivate
       displayName: 'get-task test and coverage'
     
@@ -133,7 +138,12 @@ stages:
         source venv/bin/activate
         pip install -r requirements.txt
         pip install pytest pytest-cov
-        pytest --cov=app --cov-fail-under=80
+        pytest \
+        --junitxml=test-results.xml \
+        --cov=app \
+        --cov-report=xml:coverage.xml \
+        --cov-report=term \
+        --cov-fail-under=80
         deactivate
       displayName: 'add-task test and coverage'
 
