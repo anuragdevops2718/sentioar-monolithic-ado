@@ -270,7 +270,7 @@ stages:
             snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
           displayName: 'Snyk SCA – Frontend'
           env:
-            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
+            SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
 
         # Backend add-task
@@ -280,7 +280,7 @@ stages:
             snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
           displayName: 'Snyk SCA – Backend add-task'
           env:
-            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
+            SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
 
         # Backend get-task
@@ -290,5 +290,5 @@ stages:
             snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
           displayName: 'Snyk SCA – Backend get-task'
           env:
-            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
+            SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
