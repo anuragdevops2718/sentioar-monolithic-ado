@@ -181,7 +181,7 @@ stages:
 # STAGE 3: Secret Scanning
 # =========================================================
 - stage: SecretScan
-  displayName: 'Secret Scanning'
+  displayName: 'Stage 3 - Secret Scanning'
   jobs:
 
   # ==================================
@@ -210,3 +210,33 @@ stages:
         echo "Running TruffleHog git history scan..."
         trufflehog git file://$(Build.SourcesDirectory) --no-update
       displayName: 'Run TruffleHog Scan'
+  
+  # ==================================
+  # JOB 2: Gitleaks (Fast Git Scan)
+  # ==================================
+
+  - job: GitleaksScan
+    displayName: 'Gitleaks – Secret Scan'
+    dependsOn: TruffleHogScan
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - checkout: self
+      fetchDepth: 0   # full git history
+
+    - script: |
+        echo "Installing Gitleaks..."
+        GITLEAKS_VERSION="8.21.0"
+        curl -L https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz -o gitleaks.tar.gz
+        tar -xzf gitleaks.tar.gz
+        sudo mv gitleaks /usr/local/bin/
+        gitleaks version
+      displayName: 'Install Gitleaks'
+
+    - script: |
+        echo "Running Gitleaks git scan..."
+        gitleaks detect \
+          --source . \
+          --exit-code 1
+      displayName: 'Run Gitleaks Scan'
