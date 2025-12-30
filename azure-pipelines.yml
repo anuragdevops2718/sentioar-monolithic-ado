@@ -178,7 +178,7 @@ stages:
       condition: always()
 
 # =========================================================
-# STAGE 2: Secret Scanning
+# STAGE 3: Secret Scanning
 # =========================================================
 - stage: SecretScan
   displayName: 'Secret Scanning'
@@ -198,8 +198,8 @@ stages:
 
     - script: |
         echo "Installing TruffleHog..."
-        curl -sSfL https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_linux_amd64.tar.gz \
-          | tar -xz trufflehog
+        curl -sSfL https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz \ 
+        | tar -xz trufflehog
         sudo mv trufflehog /usr/local/bin/
         trufflehog --version
       displayName: 'Install TruffleHog'
