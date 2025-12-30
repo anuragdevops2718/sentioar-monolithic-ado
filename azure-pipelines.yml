@@ -268,8 +268,10 @@ stages:
         # Authenticate Snyk
         # -----------------------------
         - script: |
-            snyk auth $(SNYK_TOKEN)
+            snyk auth "$SNYK_TOKEN"
           displayName: 'Authenticate Snyk'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
 
         # -----------------------------
         # SCA Scan – Frontend
