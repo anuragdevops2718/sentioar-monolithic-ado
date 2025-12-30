@@ -4,6 +4,10 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+- group: 'New variable group 30-Dec'
+
+
 stages:
 
 # =========================================================
