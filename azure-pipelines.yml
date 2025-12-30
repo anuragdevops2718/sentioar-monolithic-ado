@@ -265,21 +265,14 @@ stages:
           displayName: 'Install Snyk CLI'
 
         # -----------------------------
-        # Authenticate Snyk
-        # -----------------------------
-        - script: |
-            snyk auth "$SNYK_TOKEN"
-          displayName: 'Authenticate Snyk'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-
-        # -----------------------------
         # SCA Scan – Frontend
         # -----------------------------
         - script: |
             cd frontend
             snyk test --severity-threshold=critical
           displayName: 'Snyk SCA – Frontend'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
 
         # -----------------------------
         # SCA Scan – Backend (add-task)
@@ -289,6 +282,8 @@ stages:
             pip install -r requirements.txt
             snyk test --severity-threshold=critical
           displayName: 'Snyk SCA – Backend add-task'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
 
         # -----------------------------
         # SCA Scan – Backend (get-task)
@@ -299,3 +294,5 @@ stages:
             pip install -r requirements.txt
             snyk test --severity-threshold=critical
           displayName: 'Snyk SCA – Backend get-task'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
