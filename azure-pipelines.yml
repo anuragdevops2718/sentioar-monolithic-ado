@@ -176,3 +176,35 @@ stages:
         summaryFileLocation: 'backend/add-task/coverage.xml'
         reportDirectory: 'backend/add-task'
       condition: always()
+
+# =========================================================
+# STAGE 2: Secret Scanning
+# =========================================================
+- stage: SecretScan
+  displayName: 'Secret Scanning'
+  jobs:
+
+  # ==================================
+  # JOB 1: TruffleHog (Deep Git Scan)
+  # ==================================
+  - job: TruffleHogScan
+    displayName: 'TruffleHog – Secret Scan'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - checkout: self
+      fetchDepth: 0   # IMPORTANT: full git history
+
+    - script: |
+        echo "Installing TruffleHog..."
+        curl -sSfL https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_linux_amd64.tar.gz \
+          | tar -xz trufflehog
+        sudo mv trufflehog /usr/local/bin/
+        trufflehog --version
+      displayName: 'Install TruffleHog'
+
+    - script: |
+        echo "Running TruffleHog git history scan..."
+        trufflehog git file://$(Build.SourcesDirectory) --no-update
+      displayName: 'Run TruffleHog Scan'
