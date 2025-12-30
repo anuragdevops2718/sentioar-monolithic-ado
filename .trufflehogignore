@@ -1,0 +1,18 @@
+# Python virtual environments
+**/venv/**
+**/.venv/**
+
+# Python cache & binaries
+**/__pycache__/**
+**/*.pyc
+
+# Node dependencies (future-proof)
+**/node_modules/**
+
+# Build & test outputs
+**/dist/**
+**/build/**
+**/coverage/**
+
+# Tooling noise
+**/*.lock
