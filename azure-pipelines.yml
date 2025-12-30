@@ -366,3 +366,79 @@ stages:
           env:
             SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+# ==========================================================
+# STAGE 6: SCA Scan (Snyk) – With Auth
+# ==========================================================
+- stage: SCAScanss
+  displayName: 'Stage 6 - SCA Scan (Snyk)'
+  dependsOn: SecretScan
+  condition: succeeded()
+
+  jobs:
+    - job: SnykSCAScan
+      displayName: 'Snyk – Dependency Vulnerability Scan'
+      pool:
+        vmImage: 'ubuntu-latest'
+
+      steps:
+        - checkout: self
+
+        # -----------------------------------
+        # Install Snyk CLI
+        # -----------------------------------
+        - script: |
+            npm install -g snyk
+            snyk --version
+          displayName: 'Install Snyk CLI'
+
+        # -----------------------------------
+        # Authenticate Snyk (Token-based)
+        # -----------------------------------
+        - script: |
+            echo "Authenticating Snyk using API token..."
+            snyk auth "$SNYK_TOKEN"
+          displayName: 'Authenticate Snyk'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+
+        # -----------------------------------
+        # SCA Scan – Frontend
+        # -----------------------------------
+        - script: |
+            cd frontend
+            snyk test \
+              --severity-threshold=critical \
+              --org=$SNYK_ORG_ID
+          displayName: 'Snyk SCA – Frontend'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+        # -----------------------------------
+        # SCA Scan – Backend (add-task)
+        # -----------------------------------
+        - script: |
+            cd backend/add-task
+            pip install -r requirements.txt
+            snyk test \
+              --severity-threshold=critical \
+              --org=$SNYK_ORG_ID
+          displayName: 'Snyk SCA – Backend add-task'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+        # -----------------------------------
+        # SCA Scan – Backend (get-task)
+        # -----------------------------------
+        - script: |
+            cd backend/get-task
+            pip install -r requirements.txt
+            snyk test \
+              --severity-threshold=critical \
+              --org=$SNYK_ORG_ID
+          displayName: 'Snyk SCA – Backend get-task'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_ORG_ID: $(SNYK_ORG_ID)
