@@ -242,7 +242,7 @@ stages:
       displayName: 'Run Gitleaks Scan'
 
 # ==========================================================
-# STAGE 4: SCA Scan (Snyk)
+# STAGE 4: SCA Scan (Snyk - Docker)
 # ==========================================================
 - stage: SCAScan
   displayName: 'Stage 4 - SCA Scan (Snyk)'
@@ -258,24 +258,32 @@ stages:
       steps:
         - checkout: self
 
+        # ---------- Frontend ----------
         - script: |
-            npm install -g snyk
-            snyk --version
-          displayName: 'Install Snyk CLI'
-
-        - script: |
-            cd frontend
-            snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
+            docker run --rm \
+              -e SNYK_TOKEN=$(SNYK_API_TOKEN) \
+              -v $(System.DefaultWorkingDirectory):/project \
+              -w /project/frontend \
+              snyk/snyk:node \
+              snyk test --severity-threshold=critical --org=$(SNYK_ORG_ID)
           displayName: 'Snyk SCA – Frontend'
 
+        # ---------- Backend add-task ----------
         - script: |
-            cd backend/add-task
-            pip install -r requirements.txt
-            snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
+            docker run --rm \
+              -e SNYK_TOKEN=$(SNYK_API_TOKEN) \
+              -v $(System.DefaultWorkingDirectory):/project \
+              -w /project/backend/add-task \
+              snyk/snyk:python \
+              snyk test --severity-threshold=critical --org=$(SNYK_ORG_ID)
           displayName: 'Snyk SCA – Backend add-task'
 
+        # ---------- Backend get-task ----------
         - script: |
-            cd backend/get-task
-            pip install -r requirements.txt
-            snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
+            docker run --rm \
+              -e SNYK_TOKEN=$(SNYK_API_TOKEN) \
+              -v $(System.DefaultWorkingDirectory):/project \
+              -w /project/backend/get-task \
+              snyk/snyk:python \
+              snyk test --severity-threshold=critical --org=$(SNYK_ORG_ID)
           displayName: 'Snyk SCA – Backend get-task'
