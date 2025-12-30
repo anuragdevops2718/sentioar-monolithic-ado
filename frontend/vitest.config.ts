@@ -4,9 +4,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	plugins: [react()],
 	test: {
-		environment: "jsdom",
-		globals: true,
-		setupFiles: "./src/setupTests.ts",
+  reporters: ['default', 'junit'],
+  outputFile: {
+    junit: './test-results/junit.xml'
+        },
 		coverage: {
 			provider: "v8", // ✅ fastest
 			reporter: ["text", "html", "lcov", "cobertura"],
