@@ -263,7 +263,11 @@ stages:
             npm install -g snyk
             snyk --version
           displayName: 'Install Snyk CLI'
-
+        
+        - script: |
+            echo "Token length: ${#SNYK_TOKEN}"
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
         # -----------------------------
         # SCA Scan – Frontend
         # -----------------------------
