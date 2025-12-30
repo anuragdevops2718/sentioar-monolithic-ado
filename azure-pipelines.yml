@@ -300,3 +300,69 @@ stages:
           env:
             SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+# ==========================================================
+# STAGE 5: SCA Scan (Snyk) – CLI (No Docker)
+# ==========================================================
+- stage: SCAScans
+  displayName: 'Stage 5 - SCA Scan (Snyk)'
+  dependsOn: SecretScan
+  condition: succeeded()
+
+  jobs:
+    - job: SnykSCAScan
+      displayName: 'Snyk – Dependency Vulnerability Scan'
+      pool:
+        vmImage: 'ubuntu-latest'
+
+      steps:
+        - checkout: self
+
+        # -----------------------------------
+        # Install Snyk CLI
+        # -----------------------------------
+        - script: |
+            npm install -g snyk
+            snyk --version
+          displayName: 'Install Snyk CLI'
+
+        # -----------------------------------
+        # SCA Scan – Frontend (Node.js)
+        # -----------------------------------
+        - script: |
+            cd frontend
+            snyk test \
+              --severity-threshold=critical \
+              --org=$SNYK_ORG_ID
+          displayName: 'Snyk SCA – Frontend'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+        # -----------------------------------
+        # SCA Scan – Backend (add-task)
+        # -----------------------------------
+        - script: |
+            cd backend/add-task
+            pip install -r requirements.txt
+            snyk test \
+              --severity-threshold=critical \
+              --org=$SNYK_ORG_ID
+          displayName: 'Snyk SCA – Backend add-task'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+        # -----------------------------------
+        # SCA Scan – Backend (get-task)
+        # -----------------------------------
+        - script: |
+            cd backend/get-task
+            pip install -r requirements.txt
+            snyk test \
+              --severity-threshold=critical \
+              --org=$SNYK_ORG_ID
+          displayName: 'Snyk SCA – Backend get-task'
+          env:
+            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_ORG_ID: $(SNYK_ORG_ID)
