@@ -240,3 +240,60 @@ stages:
           --source . \
           --exit-code 1
       displayName: 'Run Gitleaks Scan'
+
+# ==========================================================
+# STAGE 4: SCA Scan (Snyk)
+# ==========================================================
+- stage: SCAScan
+  displayName: 'Stage 4 - SCA Scan (Snyk)'
+  dependsOn: SecretScan
+  condition: succeeded()
+
+  jobs:
+    - job: SnykSCAScan
+      displayName: 'Snyk – Dependency Vulnerability Scan'
+      steps:
+
+        - checkout: self
+
+        # -----------------------------
+        # Install Snyk CLI
+        # -----------------------------
+        - script: |
+            npm install -g snyk
+            snyk --version
+          displayName: 'Install Snyk CLI'
+
+        # -----------------------------
+        # Authenticate Snyk
+        # -----------------------------
+        - script: |
+            snyk auth $(SNYK_TOKEN)
+          displayName: 'Authenticate Snyk'
+
+        # -----------------------------
+        # SCA Scan – Frontend
+        # -----------------------------
+        - script: |
+            cd frontend
+            snyk test --severity-threshold=critical
+          displayName: 'Snyk SCA – Frontend'
+
+        # -----------------------------
+        # SCA Scan – Backend (add-task)
+        # -----------------------------
+        - script: |
+            cd backend/add-task
+            pip install -r requirements.txt
+            snyk test --severity-threshold=critical
+          displayName: 'Snyk SCA – Backend add-task'
+
+        # -----------------------------
+        # SCA Scan – Backend (get-task)
+        # -----------------------------
+        - script: |
+            
+            cd backend/get-task
+            pip install -r requirements.txt
+            snyk test --severity-threshold=critical
+          displayName: 'Snyk SCA – Backend get-task'
