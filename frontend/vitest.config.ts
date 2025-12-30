@@ -6,6 +6,7 @@ export default defineConfig({
 	test: {
 		environment: "jsdom", // ✅ THIS IS THE FIX
 		globals: true,
+		setupFiles: "./src/setupTests.ts",
 		reporters: ["default", "junit"],
 		outputFile: {
 			junit: "./test-results/junit.xml",
