@@ -265,38 +265,38 @@ stages:
         # ---------- Frontend ----------
         - script: |
             docker run --rm \
-              -e SNYK_TOKEN=$SNYK_API_TOKEN \
+              -e SNYK_TOKEN=$SNYK_TOKEN \
               -v $(System.DefaultWorkingDirectory):/project \
               -w /project/frontend \
               snyk/snyk:node \
               snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
           displayName: 'Snyk SCA – Frontend'
           env:
-            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
+            SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
 
         # ---------- Backend add-task ----------
         - script: |
             docker run --rm \
-              -e SNYK_TOKEN=$SNYK_API_TOKEN \
+              -e SNYK_TOKEN=$SNYK_TOKEN \
               -v $(System.DefaultWorkingDirectory):/project \
               -w /project/backend/add-task \
               snyk/snyk:python \
               snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
           displayName: 'Snyk SCA – Backend add-task'
           env:
-            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
+            SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
 
         # ---------- Backend get-task ----------
         - script: |
             docker run --rm \
-              -e SNYK_TOKEN=$SNYK_API_TOKEN \
+              -e SNYK_TOKEN=$SNYK_TOKEN \
               -v $(System.DefaultWorkingDirectory):/project \
               -w /project/backend/get-task \
               snyk/snyk:python \
               snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
           displayName: 'Snyk SCA – Backend get-task'
           env:
-            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
+            SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
