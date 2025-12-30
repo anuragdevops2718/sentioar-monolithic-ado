@@ -252,51 +252,40 @@ stages:
   jobs:
     - job: SnykSCAScan
       displayName: 'Snyk – Dependency Vulnerability Scan'
-      steps:
+      pool:
+        vmImage: 'ubuntu-latest'
 
+      steps:
         - checkout: self
 
-        # -----------------------------
         # Install Snyk CLI
-        # -----------------------------
         - script: |
             npm install -g snyk
             snyk --version
           displayName: 'Install Snyk CLI'
-        
-        - script: |
-            echo "Token length: ${#SNYK_TOKEN}"
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-        # -----------------------------
-        # SCA Scan – Frontend
-        # -----------------------------
+
+        # Frontend SCA
         - script: |
             cd frontend
             snyk test --severity-threshold=critical
           displayName: 'Snyk SCA – Frontend'
           env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
 
-        # -----------------------------
-        # SCA Scan – Backend (add-task)
-        # -----------------------------
+        # Backend add-task
         - script: |
             cd backend/add-task
             pip install -r requirements.txt
             snyk test --severity-threshold=critical
           displayName: 'Snyk SCA – Backend add-task'
           env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
 
-        # -----------------------------
-        # SCA Scan – Backend (get-task)
-        # -----------------------------
+        # Backend get-task
         - script: |
-            
             cd backend/get-task
             pip install -r requirements.txt
             snyk test --severity-threshold=critical
           displayName: 'Snyk SCA – Backend get-task'
           env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
+            SNYK_API_TOKEN: $(SNYK_API_TOKEN)
