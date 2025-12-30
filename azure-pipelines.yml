@@ -198,8 +198,10 @@ stages:
 
     - script: |
         echo "Installing TruffleHog..."
-        curl -sSfL https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz \ 
-        | tar -xz trufflehog
+        TRUFFLEHOG_VERSION="3.92.4"
+        TRUFFLEHOG_URL="https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz"
+        curl -L "$TRUFFLEHOG_URL" -o trufflehog.tar.gz
+        tar -xzf trufflehog.tar.gz
         sudo mv trufflehog /usr/local/bin/
         trufflehog --version
       displayName: 'Install TruffleHog'
