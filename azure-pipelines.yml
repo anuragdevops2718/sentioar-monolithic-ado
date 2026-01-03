@@ -193,9 +193,6 @@ stages:
   # ==================================
   - job: TruffleHogScan
     displayName: 'TruffleHog – Secret Scan'
-    pool:
-      vmImage: 'ubuntu-latest'
-
     steps:
     - checkout: self
       fetchDepth: 0   # IMPORTANT: full git history
@@ -222,9 +219,6 @@ stages:
   - job: GitleaksScan
     displayName: 'Gitleaks – Secret Scan'
     dependsOn: TruffleHogScan
-    pool:
-      vmImage: 'ubuntu-latest'
-
     steps:
     - checkout: self
       fetchDepth: 0   # full git history
@@ -256,9 +250,6 @@ stages:
   jobs:
     - job: SnykSCAScan
       displayName: 'Snyk – Dependency Vulnerability Scan'
-      pool:
-        vmImage: 'ubuntu-latest'
-
       steps:
         - checkout: self
 
@@ -312,9 +303,6 @@ stages:
   jobs:
     - job: SnykSCAScan
       displayName: 'Snyk – Dependency Vulnerability Scan'
-      pool:
-        vmImage: 'ubuntu-latest'
-
       steps:
         - checkout: self
 
@@ -378,8 +366,6 @@ stages:
   jobs:
     - job: SnykSCAScan
       displayName: 'Snyk – Dependency Vulnerability Scan'
-      pool:
-        vmImage: 'ubuntu-latest'
 
       steps:
         - checkout: self
@@ -442,3 +428,38 @@ stages:
           env:
             SNYK_TOKEN: $(SNYK_TOKEN)
             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+# ==========================================================
+# STAGE 7: SAST Scan (SonarQube)
+# ==========================================================
+- stage: SASTScan
+  displayName: 'Stage 7 - SAST Scan (SonarQube)'
+  dependsOn: SCAScan
+  condition: succeeded()
+
+  jobs:
+    - job: SonarQubeSAST
+      displayName: 'SonarQube – Static Code Analysis'
+      steps:
+        - checkout: self
+
+        # -----------------------------
+        # Install SonarScanner (Linux)
+        # -----------------------------
+        - script: |
+            echo "Installing SonarScanner..."
+            curl -L -o sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.3.0.5189-linux-x64.zip
+            unzip -o sonar-scanner.zip
+            export PATH=$PWD/sonar-scanner-7.3.0.5189-linux-x64/bin:$PATH
+            sonar-scanner --version
+          displayName: 'Install SonarScanner CLI'
+
+        # -----------------------------
+        # Run SonarQube Scan
+        # -----------------------------
+        - script: |
+            export PATH=$PWD/sonar-scanner-7.3.0.5189-linux-x64/bin:$PATH
+            sonar-scanner \
+              -Dsonar.host.url=$(SONAR_HOST_URL) \
+              -Dsonar.token=$(SONAR_TOKEN)
+          displayName: 'Run SonarQube SAST Scan'
