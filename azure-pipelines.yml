@@ -440,6 +440,8 @@ stages:
   jobs:
     - job: SonarQubeSAST
       displayName: 'SonarQube – Static Code Analysis'
+      pool:
+        apforge_agents
       steps:
         - checkout: self
 
