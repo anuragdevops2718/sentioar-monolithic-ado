@@ -475,3 +475,53 @@ stages:
                 -Dproject.settings=sonar-project.properties ^
                 -Dsonar.host.url=%SONAR_HOST_URL% ^
                 -Dsonar.token=%SONAR_TOKEN%
+
+# ==========================================================
+# STAGE 8: Build Artifacts
+# ==========================================================
+- stage: BuildArtifacts
+  displayName: 'Stage 8 - Build Artifacts'
+  dependsOn: SASTScan
+  condition: succeeded()
+
+  jobs:
+    - job: BuildArtifacts
+      displayName: 'Build & Publish Artifacts'
+      steps:
+        - checkout: self
+
+        # -----------------------------
+        # Frontend Build (Vite / React)
+        # -----------------------------
+        - script: |
+            cd frontend
+            npm install
+            npm run build
+          displayName: 'Build Frontend'
+
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Frontend Artifact'
+          inputs:
+            PathtoPublish: 'frontend/dist'
+            ArtifactName: 'frontend-drop'
+            publishLocation: 'Container'
+
+        # -----------------------------
+        # Backend add-task Artifact
+        # -----------------------------
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Backend add-task Artifact'
+          inputs:
+            PathtoPublish: 'backend/add-task'
+            ArtifactName: 'backend-add-task'
+            publishLocation: 'Container'
+
+        # -----------------------------
+        # Backend get-task Artifact
+        # -----------------------------
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Backend get-task Artifact'
+          inputs:
+            PathtoPublish: 'backend/get-task'
+            ArtifactName: 'backend-get-task'
+            publishLocation: 'Container'
