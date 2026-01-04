@@ -17,8 +17,8 @@ stages:
 - stage: Linting
   displayName: 'Stage 1 - Linting'
   jobs:
-  - job: Lint
-    displayName: 'Lint Frontend & Backend'
+  - job: LintFrontend
+    displayName: 'Lint Frontend'
     steps:
 
     # -----------------------------
@@ -36,6 +36,10 @@ stages:
         cd frontend
         biome check .
       displayName: 'Lint Frontend (Biome)' 
+
+  - job: LintBackend
+    displayName: 'Lint Backend'
+    steps: 
     # -----------------------------
     # Task 3: Run Pylint (Backend)
     # -----------------------------
