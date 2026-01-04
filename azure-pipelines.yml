@@ -530,18 +530,18 @@ stages:
 
 # ==========================================================
 # STAGE 9: Publish Artifacts to Nexus OSS
-# ==========================================================
+# ==========================================================            
 
 - stage: PublishToNexus
-  displayName: 'Stage 9 - Publish Artifacts to Nexus OSS'
+  displayName: 'Stage 9 - Publish Artifacts to Nexus (Windows)'
   dependsOn: BuildArtifacts
   condition: succeeded()
 
   jobs:
     - job: NexusUpload
-      displayName: 'Upload Frontend & Backend Artifacts to Nexus'
+      displayName: 'Upload Artifacts to Nexus OSS'
       pool:
-        apforge_agents
+        name: apforge_agents   # Windows self-hosted agent
 
       steps:
         - checkout: none
@@ -550,55 +550,57 @@ stages:
         # Download Artifacts
         # -----------------------------
         - task: DownloadBuildArtifacts@0
-          displayName: 'Download Frontend Artifact'
           inputs:
-            artifactName: 'frontend-drop'
-            downloadPath: '$(Pipeline.Workspace)/artifacts'
+            artifactName: frontend-drop
+            downloadPath: $(Pipeline.Workspace)
 
         - task: DownloadBuildArtifacts@0
-          displayName: 'Download Backend add-task Artifact'
           inputs:
-            artifactName: 'backend-add-task'
-            downloadPath: '$(Pipeline.Workspace)/artifacts'
+            artifactName: backend-add-task
+            downloadPath: $(Pipeline.Workspace)
 
         - task: DownloadBuildArtifacts@0
-          displayName: 'Download Backend get-task Artifact'
           inputs:
-            artifactName: 'backend-get-task'
-            downloadPath: '$(Pipeline.Workspace)/artifacts'
+            artifactName: backend-get-task
+            downloadPath: $(Pipeline.Workspace)
 
         # -----------------------------
         # Upload Frontend Artifact
         # -----------------------------
-        - script: |
-            cd $(Pipeline.Workspace)/artifacts/frontend-drop
-            zip -r frontend-dist.zip .
+        - powershell: |
+            $ErrorActionPreference = "Stop"
 
-            curl -v -u $(NEXUS_USER):$(NEXUS_PASSWORD) \
-              --upload-file frontend-dist.zip \
-              $(NEXUS_URL)/repository/$(NEXUS_FRONTEND_REPO)/frontend/frontend-dist-$(Build.BuildId).zip
+            cd "$(Pipeline.Workspace)\frontend-drop"
+
+            Compress-Archive -Path * -DestinationPath frontend-dist.zip -Force
+
+            curl.exe -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" `
+              -T frontend-dist.zip `
+              "$(NEXUS_URL)/repository/$(NEXUS_FRONTEND_REPO)/frontend/frontend-$(Build.BuildId).zip"
           displayName: 'Upload Frontend Artifact to Nexus'
 
         # -----------------------------
         # Upload Backend add-task
         # -----------------------------
-        - script: |
-            cd $(Pipeline.Workspace)/artifacts/backend-add-task
-            zip -r backend-add-task.zip .
+        - powershell: |
+            cd "$(Pipeline.Workspace)\backend-add-task"
 
-            curl -v -u $(NEXUS_USER):$(NEXUS_PASSWORD) \
-              --upload-file backend-add-task.zip \
-              $(NEXUS_URL)/repository/$(NEXUS_BACKEND_REPO)/backend/add-task/backend-add-task-$(Build.BuildId).zip
+            Compress-Archive -Path * -DestinationPath backend-add-task.zip -Force
+
+            curl.exe -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" `
+              -T backend-add-task.zip `
+              "$(NEXUS_URL)/repository/$(NEXUS_BACKEND_REPO)/backend/add-task-$(Build.BuildId).zip"
           displayName: 'Upload Backend add-task Artifact'
 
         # -----------------------------
         # Upload Backend get-task
         # -----------------------------
-        - script: |
-            cd $(Pipeline.Workspace)/artifacts/backend-get-task
-            zip -r backend-get-task.zip .
+        - powershell: |
+            cd "$(Pipeline.Workspace)\backend-get-task"
 
-            curl -v -u $(NEXUS_USER):$(NEXUS_PASSWORD) \
-              --upload-file backend-get-task.zip \
-              $(NEXUS_URL)/repository/$(NEXUS_BACKEND_REPO)/backend/get-task/backend-get-task-$(Build.BuildId).zip
+            Compress-Archive -Path * -DestinationPath backend-get-task.zip -Force
+
+            curl.exe -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" `
+              -T backend-get-task.zip `
+              "$(NEXUS_URL)/repository/$(NEXUS_BACKEND_REPO)/backend/get-task-$(Build.BuildId).zip"
           displayName: 'Upload Backend get-task Artifact'
