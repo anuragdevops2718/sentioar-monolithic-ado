@@ -244,127 +244,127 @@ stages:
           --exit-code 1
       displayName: 'Run Gitleaks Scan'
 
+# # ==========================================================
+# # STAGE 4: SCA Scan (Snyk - Docker)
+# # ==========================================================
+# - stage: SCAScan
+#   displayName: 'Stage 4 - SCA Scan (Snyk)'
+#   dependsOn: SecretScan
+#   condition: succeeded()
+
+#   jobs:
+#     - job: SnykSCAScan
+#       displayName: 'Snyk – Dependency Vulnerability Scan'
+#       steps:
+#         - checkout: self
+
+#         # ---------- Frontend ----------
+#         - script: |
+#             docker run --rm \
+#               -e SNYK_TOKEN=$SNYK_TOKEN \
+#               -v $(System.DefaultWorkingDirectory):/project \
+#               -w /project/frontend \
+#               snyk/snyk:node \
+#               snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
+#           displayName: 'Snyk SCA – Frontend'
+#           env:
+#             SNYK_TOKEN: $(SNYK_TOKEN)
+#             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+#         # ---------- Backend add-task ----------
+#         - script: |
+#             docker run --rm \
+#               -e SNYK_TOKEN=$SNYK_TOKEN \
+#               -v $(System.DefaultWorkingDirectory):/project \
+#               -w /project/backend/add-task \
+#               snyk/snyk:python \
+#               snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
+#           displayName: 'Snyk SCA – Backend add-task'
+#           env:
+#             SNYK_TOKEN: $(SNYK_TOKEN)
+#             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+#         # ---------- Backend get-task ----------
+#         - script: |
+#             docker run --rm \
+#               -e SNYK_TOKEN=$SNYK_TOKEN \
+#               -v $(System.DefaultWorkingDirectory):/project \
+#               -w /project/backend/get-task \
+#               snyk/snyk:python \
+#               snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
+#           displayName: 'Snyk SCA – Backend get-task'
+#           env:
+#             SNYK_TOKEN: $(SNYK_TOKEN)
+#             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+# # ==========================================================
+# # STAGE 4: SCA Scan (Snyk) – CLI (No Docker)
+# # ==========================================================
+# - stage: SCAScans
+#   displayName: 'Stage 5 - SCA Scan (Snyk)'
+#   dependsOn: SecretScan
+#   condition: succeeded()
+
+#   jobs:
+#     - job: SnykSCAScan
+#       displayName: 'Snyk – Dependency Vulnerability Scan'
+#       steps:
+#         - checkout: self
+
+#         # -----------------------------------
+#         # Install Snyk CLI
+#         # -----------------------------------
+#         - script: |
+#             npm install -g snyk
+#             snyk --version
+#           displayName: 'Install Snyk CLI'
+
+#         # -----------------------------------
+#         # SCA Scan – Frontend (Node.js)
+#         # -----------------------------------
+#         - script: |
+#             cd frontend
+#             snyk test \
+#               --severity-threshold=critical \
+#               --org=$SNYK_ORG_ID
+#           displayName: 'Snyk SCA – Frontend'
+#           env:
+#             SNYK_TOKEN: $(SNYK_TOKEN)
+#             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+#         # -----------------------------------
+#         # SCA Scan – Backend (add-task)
+#         # -----------------------------------
+#         - script: |
+#             cd backend/add-task
+#             pip install -r requirements.txt
+#             snyk test \
+#               --severity-threshold=critical \
+#               --org=$SNYK_ORG_ID
+#           displayName: 'Snyk SCA – Backend add-task'
+#           env:
+#             SNYK_TOKEN: $(SNYK_TOKEN)
+#             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
+#         # -----------------------------------
+#         # SCA Scan – Backend (get-task)
+#         # -----------------------------------
+#         - script: |
+#             cd backend/get-task
+#             pip install -r requirements.txt
+#             snyk test \
+#               --severity-threshold=critical \
+#               --org=$SNYK_ORG_ID
+#           displayName: 'Snyk SCA – Backend get-task'
+#           env:
+#             SNYK_TOKEN: $(SNYK_TOKEN)
+#             SNYK_ORG_ID: $(SNYK_ORG_ID)
+
 # ==========================================================
-# STAGE 4: SCA Scan (Snyk - Docker)
+# STAGE 4: SCA Scan (Snyk) – With Auth
 # ==========================================================
 - stage: SCAScan
   displayName: 'Stage 4 - SCA Scan (Snyk)'
-  dependsOn: SecretScan
-  condition: succeeded()
-
-  jobs:
-    - job: SnykSCAScan
-      displayName: 'Snyk – Dependency Vulnerability Scan'
-      steps:
-        - checkout: self
-
-        # ---------- Frontend ----------
-        - script: |
-            docker run --rm \
-              -e SNYK_TOKEN=$SNYK_TOKEN \
-              -v $(System.DefaultWorkingDirectory):/project \
-              -w /project/frontend \
-              snyk/snyk:node \
-              snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
-          displayName: 'Snyk SCA – Frontend'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-            SNYK_ORG_ID: $(SNYK_ORG_ID)
-
-        # ---------- Backend add-task ----------
-        - script: |
-            docker run --rm \
-              -e SNYK_TOKEN=$SNYK_TOKEN \
-              -v $(System.DefaultWorkingDirectory):/project \
-              -w /project/backend/add-task \
-              snyk/snyk:python \
-              snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
-          displayName: 'Snyk SCA – Backend add-task'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-            SNYK_ORG_ID: $(SNYK_ORG_ID)
-
-        # ---------- Backend get-task ----------
-        - script: |
-            docker run --rm \
-              -e SNYK_TOKEN=$SNYK_TOKEN \
-              -v $(System.DefaultWorkingDirectory):/project \
-              -w /project/backend/get-task \
-              snyk/snyk:python \
-              snyk test --severity-threshold=critical --org=$SNYK_ORG_ID
-          displayName: 'Snyk SCA – Backend get-task'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-            SNYK_ORG_ID: $(SNYK_ORG_ID)
-
-# ==========================================================
-# STAGE 5: SCA Scan (Snyk) – CLI (No Docker)
-# ==========================================================
-- stage: SCAScans
-  displayName: 'Stage 5 - SCA Scan (Snyk)'
-  dependsOn: SecretScan
-  condition: succeeded()
-
-  jobs:
-    - job: SnykSCAScan
-      displayName: 'Snyk – Dependency Vulnerability Scan'
-      steps:
-        - checkout: self
-
-        # -----------------------------------
-        # Install Snyk CLI
-        # -----------------------------------
-        - script: |
-            npm install -g snyk
-            snyk --version
-          displayName: 'Install Snyk CLI'
-
-        # -----------------------------------
-        # SCA Scan – Frontend (Node.js)
-        # -----------------------------------
-        - script: |
-            cd frontend
-            snyk test \
-              --severity-threshold=critical \
-              --org=$SNYK_ORG_ID
-          displayName: 'Snyk SCA – Frontend'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-            SNYK_ORG_ID: $(SNYK_ORG_ID)
-
-        # -----------------------------------
-        # SCA Scan – Backend (add-task)
-        # -----------------------------------
-        - script: |
-            cd backend/add-task
-            pip install -r requirements.txt
-            snyk test \
-              --severity-threshold=critical \
-              --org=$SNYK_ORG_ID
-          displayName: 'Snyk SCA – Backend add-task'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-            SNYK_ORG_ID: $(SNYK_ORG_ID)
-
-        # -----------------------------------
-        # SCA Scan – Backend (get-task)
-        # -----------------------------------
-        - script: |
-            cd backend/get-task
-            pip install -r requirements.txt
-            snyk test \
-              --severity-threshold=critical \
-              --org=$SNYK_ORG_ID
-          displayName: 'Snyk SCA – Backend get-task'
-          env:
-            SNYK_TOKEN: $(SNYK_TOKEN)
-            SNYK_ORG_ID: $(SNYK_ORG_ID)
-
-# ==========================================================
-# STAGE 6: SCA Scan (Snyk) – With Auth
-# ==========================================================
-- stage: SCAScanss
-  displayName: 'Stage 6 - SCA Scan (Snyk)'
   dependsOn: SecretScan
   condition: succeeded()
 
@@ -435,10 +435,10 @@ stages:
             SNYK_ORG_ID: $(SNYK_ORG_ID)
 
 # ==========================================================
-# STAGE 7: SAST Scan (SonarQube)
+# STAGE 5: SAST Scan (SonarQube)
 # ==========================================================
 - stage: SASTScan
-  displayName: 'Stage 7 - SAST Scan (SonarQube)'
+  displayName: 'Stage 5 - SAST Scan (SonarQube)'
   dependsOn: SCAScan
   condition: succeeded()
 
@@ -465,10 +465,10 @@ stages:
             script: |
               & sonar-scanner.bat --% -Dsonar.projectKey=sentioar-monolithic-ado -Dsonar.sources=. -Dsonar.host.url=$(SONAR_HOST_URL) -Dsonar.token=$(SONAR_TOKEN)
 # ==========================================================
-# STAGE 8: Build Artifacts
+# STAGE 6: Build Artifacts
 # ==========================================================
 - stage: BuildArtifacts
-  displayName: 'Stage 8 - Build Artifacts'
+  displayName: 'Stage 6 - Build Artifacts'
   dependsOn: SASTScan
   condition: succeeded()
 
@@ -516,11 +516,11 @@ stages:
             publishLocation: 'Container'
 
 # ==========================================================
-# STAGE 9: Publish Artifacts to Nexus OSS
+# STAGE 7: Publish Artifacts to Nexus OSS
 # ==========================================================            
 
 - stage: PublishToNexus
-  displayName: 'Stage 9 - Publish Artifacts to Nexus (Windows)'
+  displayName: 'Stage 7 - Publish Artifacts to Nexus (Windows)'
   dependsOn: BuildArtifacts
   condition: succeeded()
 
