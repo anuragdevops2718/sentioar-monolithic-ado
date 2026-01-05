@@ -63,11 +63,71 @@ stages:
       displayName: 'Lint Backend(Pylint---addtask)'
 
 # =========================================================
-# STAGE 2: UNIT TESTS & COVERAGE
+# STAGE 2: Secret Scanning
+# =========================================================
+- stage: SecretScan
+  displayName: 'Stage 2 - Secret Scanning'
+  dependsOn: Linting
+  jobs:
+
+  # ==================================
+  # JOB 1: TruffleHog (Deep Git Scan)
+  # ==================================
+  - job: TruffleHogScan
+    displayName: 'TruffleHog – Secret Scan'
+    steps:
+    - checkout: self
+      fetchDepth: 0   # IMPORTANT: full git history
+
+    - script: |
+        echo "Installing TruffleHog..."
+        TRUFFLEHOG_VERSION="3.92.4"
+        TRUFFLEHOG_URL="https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz"
+        curl -L "$TRUFFLEHOG_URL" -o trufflehog.tar.gz
+        tar -xzf trufflehog.tar.gz
+        sudo mv trufflehog /usr/local/bin/
+        trufflehog --version
+      displayName: 'Install TruffleHog'
+
+    - script: |
+        echo "Running TruffleHog git history scan..."
+        trufflehog git file://$(Build.SourcesDirectory) --no-update
+      displayName: 'Run TruffleHog Scan'
+  
+  # ==================================
+  # JOB 2: Gitleaks (Fast Git Scan)
+  # ==================================
+
+  - job: GitleaksScan
+    displayName: 'Gitleaks – Secret Scan'
+    dependsOn: TruffleHogScan
+    steps:
+    - checkout: self
+      fetchDepth: 0   # full git history
+
+    - script: |
+        echo "Installing Gitleaks..."
+        GITLEAKS_VERSION="8.21.0"
+        curl -L https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz -o gitleaks.tar.gz
+        tar -xzf gitleaks.tar.gz
+        sudo mv gitleaks /usr/local/bin/
+        gitleaks version
+      displayName: 'Install Gitleaks'
+
+    - script: |
+        echo "Running Gitleaks git scan..."
+        gitleaks detect \
+          --source . \
+          --exit-code 1
+      displayName: 'Run Gitleaks Scan'
+
+
+# =========================================================
+# STAGE 3: UNIT TESTS & COVERAGE
 # =========================================================
 - stage: Tests
-  displayName: 'Stage 2 - Unit Tests & Coverage'
-  dependsOn: Linting
+  displayName: 'Stage 3 - Unit Tests & Coverage'
+  dependsOn: SecretScan
   jobs:
 
   # -------------------------------------------------------
@@ -186,63 +246,6 @@ stages:
         reportDirectory: 'backend/add-task'
       condition: always()
 
-# =========================================================
-# STAGE 3: Secret Scanning
-# =========================================================
-- stage: SecretScan
-  displayName: 'Stage 3 - Secret Scanning'
-  jobs:
-
-  # ==================================
-  # JOB 1: TruffleHog (Deep Git Scan)
-  # ==================================
-  - job: TruffleHogScan
-    displayName: 'TruffleHog – Secret Scan'
-    steps:
-    - checkout: self
-      fetchDepth: 0   # IMPORTANT: full git history
-
-    - script: |
-        echo "Installing TruffleHog..."
-        TRUFFLEHOG_VERSION="3.92.4"
-        TRUFFLEHOG_URL="https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz"
-        curl -L "$TRUFFLEHOG_URL" -o trufflehog.tar.gz
-        tar -xzf trufflehog.tar.gz
-        sudo mv trufflehog /usr/local/bin/
-        trufflehog --version
-      displayName: 'Install TruffleHog'
-
-    - script: |
-        echo "Running TruffleHog git history scan..."
-        trufflehog git file://$(Build.SourcesDirectory) --no-update
-      displayName: 'Run TruffleHog Scan'
-  
-  # ==================================
-  # JOB 2: Gitleaks (Fast Git Scan)
-  # ==================================
-
-  - job: GitleaksScan
-    displayName: 'Gitleaks – Secret Scan'
-    dependsOn: TruffleHogScan
-    steps:
-    - checkout: self
-      fetchDepth: 0   # full git history
-
-    - script: |
-        echo "Installing Gitleaks..."
-        GITLEAKS_VERSION="8.21.0"
-        curl -L https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz -o gitleaks.tar.gz
-        tar -xzf gitleaks.tar.gz
-        sudo mv gitleaks /usr/local/bin/
-        gitleaks version
-      displayName: 'Install Gitleaks'
-
-    - script: |
-        echo "Running Gitleaks git scan..."
-        gitleaks detect \
-          --source . \
-          --exit-code 1
-      displayName: 'Run Gitleaks Scan'
 
 # # ==========================================================
 # # STAGE 4: SCA Scan (Snyk - Docker)
@@ -365,7 +368,7 @@ stages:
 # ==========================================================
 - stage: SCAScan
   displayName: 'Stage 4 - SCA Scan (Snyk)'
-  dependsOn: SecretScan
+  dependsOn: Tests
   condition: succeeded()
 
   jobs:
@@ -439,7 +442,9 @@ stages:
 # ==========================================================
 - stage: SASTScan
   displayName: 'Stage 5 - SAST Scan (SonarQube)'
-  dependsOn: SCAScan
+  dependsOn: 
+  - SCAScan
+  - Tests
   condition: succeeded()
 
   jobs:
