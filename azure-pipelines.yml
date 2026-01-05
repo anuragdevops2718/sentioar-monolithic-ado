@@ -6,6 +6,7 @@ pool:
 
 variables:
 - group: 'New variable group 30-Dec'
+- group: 'nexus-secrets'
 
 
 stages:
@@ -16,8 +17,8 @@ stages:
 - stage: Linting
   displayName: 'Stage 1 - Linting'
   jobs:
-  - job: Lint
-    displayName: 'Lint Frontend & Backend'
+  - job: LintFrontend
+    displayName: 'Lint Frontend'
     steps:
 
     # -----------------------------
@@ -35,6 +36,10 @@ stages:
         cd frontend
         biome check .
       displayName: 'Lint Frontend (Biome)' 
+
+  - job: LintBackend
+    displayName: 'Lint Backend'
+    steps: 
     # -----------------------------
     # Task 3: Run Pylint (Backend)
     # -----------------------------
@@ -449,33 +454,20 @@ stages:
         # -----------------------------------
         # Install SonarScanner (SIMPLE)
         # -----------------------------------
-        - task: CmdLine@2
-          displayName: 'Install SonarScanner (if missing)'
-          inputs:
-            script: |
-              where sonar-scanner >nul 2>&1
-              if %ERRORLEVEL% NEQ 0 (
-                echo SonarScanner not found. Installing...
-                choco install sonarscanner -y
-              ) else (
-                echo SonarScanner already installed
-              )
-
+        
         # -----------------------------------
         # Run SonarQube Scan
         # -----------------------------------
-        - task: CmdLine@2
-          displayName: 'Run SonarQube SAST Scan'
-          env:
-            SONAR_HOST_URL: $(SONAR_HOST_URL)
-            SONAR_TOKEN: $(SONAR_TOKEN)
+        - task: PowerShell@2
+          displayName: 'Run SonarQube Scan'
           inputs:
+            targetType: 'inline'
             script: |
-              sonar-scanner ^
-                -Dproject.settings=sonar-project.properties ^
-                -Dsonar.host.url=%SONAR_HOST_URL% ^
-                -Dsonar.token=%SONAR_TOKEN%
-
+              sonar-scanner `
+              -Dsonar.projectKey=sentioar-monolithic-ado `
+              -Dsonar.sources=. `
+              -Dsonar.host.url=$(SONAR_HOST_URL) `
+              -Dsonar.token=$(SONAR_TOKEN)
 # ==========================================================
 # STAGE 8: Build Artifacts
 # ==========================================================
@@ -526,3 +518,80 @@ stages:
             PathtoPublish: 'backend/get-task'
             ArtifactName: 'backend-get-task'
             publishLocation: 'Container'
+
+# ==========================================================
+# STAGE 9: Publish Artifacts to Nexus OSS
+# ==========================================================            
+
+- stage: PublishToNexus
+  displayName: 'Stage 9 - Publish Artifacts to Nexus (Windows)'
+  dependsOn: BuildArtifacts
+  condition: succeeded()
+
+  jobs:
+    - job: NexusUpload
+      displayName: 'Upload Artifacts to Nexus OSS'
+      pool:
+        name: apforge_agents   # Windows self-hosted agent
+
+      steps:
+        - checkout: none
+
+        # -----------------------------
+        # Download Artifacts
+        # -----------------------------
+        - task: DownloadBuildArtifacts@0
+          inputs:
+            artifactName: frontend-drop
+            downloadPath: $(Pipeline.Workspace)
+
+        - task: DownloadBuildArtifacts@0
+          inputs:
+            artifactName: backend-add-task
+            downloadPath: $(Pipeline.Workspace)
+
+        - task: DownloadBuildArtifacts@0
+          inputs:
+            artifactName: backend-get-task
+            downloadPath: $(Pipeline.Workspace)
+
+        # -----------------------------
+        # Upload Frontend Artifact
+        # -----------------------------
+        - powershell: |
+            $ErrorActionPreference = "Stop"
+
+            cd "$(Pipeline.Workspace)\frontend-drop"
+
+            Compress-Archive -Path * -DestinationPath frontend-dist.zip -Force
+
+            curl.exe -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" `
+              -T frontend-dist.zip `
+              "$(NEXUS_URL)/repository/$(NEXUS_FRONTEND_REPO)/frontend/frontend-$(Build.BuildId).zip"
+          displayName: 'Upload Frontend Artifact to Nexus'
+
+        # -----------------------------
+        # Upload Backend add-task
+        # -----------------------------
+        - powershell: |
+            cd "$(Pipeline.Workspace)\backend-add-task"
+
+            Compress-Archive -Path * -DestinationPath backend-add-task.zip -Force
+
+            curl.exe -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" `
+              -T backend-add-task.zip `
+              "$(NEXUS_URL)/repository/$(NEXUS_BACKEND_REPO)/backend/add-task-$(Build.BuildId).zip"
+          displayName: 'Upload Backend add-task Artifact'
+
+        # -----------------------------
+        # Upload Backend get-task
+        # -----------------------------
+        - powershell: |
+            cd "$(Pipeline.Workspace)\backend-get-task"
+
+            Compress-Archive -Path * -DestinationPath backend-get-task.zip -Force
+
+            curl.exe -u "$(NEXUS_USER):$(NEXUS_PASSWORD)" `
+              -T backend-get-task.zip `
+              "$(NEXUS_URL)/repository/$(NEXUS_BACKEND_REPO)/backend/get-task-$(Build.BuildId).zip"
+          displayName: 'Upload Backend get-task Artifact'
