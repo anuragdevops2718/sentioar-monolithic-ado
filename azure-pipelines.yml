@@ -454,34 +454,7 @@ stages:
         # -----------------------------------
         # Install SonarScanner (SIMPLE)
         # -----------------------------------
-        - powershell: |
-            $ErrorActionPreference = "Stop"
-
-            if (Get-Command sonar-scanner -ErrorAction SilentlyContinue) {
-              Write-Host "SonarScanner already available"
-              sonar-scanner --version
-            }
-            else {
-              Write-Host "Installing SonarScanner locally for this pipeline run"
-
-              $version = "7.3.0.5189"
-              $zip = "$env:AGENT_TEMPDIRECTORY\sonar-scanner.zip"
-              $dir = "$env:AGENT_TEMPDIRECTORY\sonar-scanner"
-
-              Invoke-WebRequest `
-                "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$version-windows-x64.zip" `
-                -OutFile $zip
-
-              Expand-Archive $zip $dir -Force
-
-              $bin = "$dir\sonar-scanner-$version-windows-x64\bin"
-
-              # 🔥 Azure DevOps official way
-              Write-Host "##vso[task.prependpath]$bin"
-
-              sonar-scanner --version
-            }
-          displayName: 'Install SonarScanner (if missing)'
+        
         # -----------------------------------
         # Run SonarQube Scan
         # -----------------------------------
